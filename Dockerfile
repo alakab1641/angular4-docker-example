@@ -11,7 +11,7 @@ RUN     curl -fsSL https://deb.nodesource.com/setup_14.x | bash - && \
         apt-get install -y nodejs
 
 # Creating the educative directory and downloading the code for the application in it
-RUN   sudo  mkdir /educative && \
+RUN    mkdir /educative && \
 	    cd /educative && \
         git clone https://github.com/avatsaev/angular4-docker-example.git
 
