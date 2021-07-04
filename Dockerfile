@@ -1,34 +1,21 @@
-### STAGE 1: Build ###
+# Base image
+FROM ubuntu:18.04
 
-# We label our stage as 'builder'
-FROM node:9-alpine as builder
+# Installing Required Packages
+RUN     apt-get update && \
+        apt-get upgrade -y && \
+        apt-get install -y git curl
 
-COPY package.json package-lock.json ./
+# Installing NodeJS
+RUN     curl -fsSL https://deb.nodesource.com/setup_14.x | bash - && \
+        apt-get install -y nodejs
 
-RUN npm set progress=false && npm config set depth 0 && npm cache clean --force
+# Creating the educative directory and downloading the code for the application in it
+RUN     mkdir /educative && \
+	cd /educative && \
+        git clone https://github.com/avatsaev/angular4-docker-example.git
 
-## Storing node modules on a separate layer will prevent unnecessary npm installs at each build
-RUN npm i && mkdir /ng-app && cp -R ./node_modules ./ng-app
-
-WORKDIR /ng-app
-
-COPY . .
-
-## Build the angular app in production mode and store the artifacts in dist folder
-RUN $(npm bin)/ng build --prod
-
-
-### STAGE 2: Setup ###
-
-FROM nginx:1.13.3-alpine
-
-## Copy our default nginx config
-COPY nginx/default.conf /etc/nginx/conf.d/
-
-## Remove default nginx website
-RUN rm -rf /usr/share/nginx/html/*
-
-## From 'builder' stage copy over the artifacts in dist folder to default nginx public folder
-COPY --from=builder /ng-app/dist /usr/share/nginx/html
-
-CMD ["nginx", "-g", "daemon off;"]
+# Installing Angular cli and node modules in angular directory
+RUN     npm install -g @angular/cli && \
+        cd /educative/angular_demo && \
+        npm i
